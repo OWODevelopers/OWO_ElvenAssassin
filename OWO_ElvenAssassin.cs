@@ -1,6 +1,7 @@
 ﻿using System;
 using MelonLoader;
 using HarmonyLib;
+using UnityEngine;
 
 [assembly: MelonInfo(typeof(OWO_ElvenAssassin.OWO_ElvenAssassin), "OWO_ElvenAssassin", "1.0.0", "OWOGame")]
 [assembly: MelonGame("WenklyStudio", "Elven Assassin")]
@@ -30,6 +31,16 @@ namespace OWO_ElvenAssassin
             }
         }
 
+        [HarmonyPatch(typeof(WenklyStudio.BowController), "UpdateBowTensionValue", new Type[] { })]
+        public class UpdateBowTensionValue
+        {
+            [HarmonyPostfix]
+            public static void Postfix(WenklyStudio.BowController __instance)
+            {
+                owoSkin.LOG($"UpdateBowTensionValue: {__instance.BowAnimationNormalizedTime}");
+            }
+        }
+        
         [HarmonyPatch(typeof(WenklyStudio.BowController), "Shoot", new Type[] { })]
         public class ShootBow
         {
@@ -87,13 +98,37 @@ namespace OWO_ElvenAssassin
         }
         #endregion
 
-        [HarmonyPatch(typeof(WenklyStudio.ElvenAssassin.TrollAttackController), "Shout", new Type[] { })]
+        [HarmonyPatch(typeof(WenklyStudio.ElvenAssassin.TrollAttackController), "Shout")]
         public class TrollShout
         {
             [HarmonyPostfix]
             public static void Postfix()
             {                
                 owoSkin.Feel("Belly Rumble", 3);
+            }
+        }
+
+        [HarmonyPatch(typeof(TeleportController), "TeleportLocalPlayer")]
+        public class TeleportLocalPlayer
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {               
+                owoSkin.LOG($"Teleporting bro!");
+
+                //owoSkin.Feel("Belly Rumble", 3);
+            }
+        }
+
+        [HarmonyPatch(typeof(GateController), "DamageGate")]
+        public class DamageGate
+        {
+            [HarmonyPostfix]
+            public static void Postfix(GateController __instance)
+            {
+                owoSkin.LOG($"Damage Gate {__instance.EnemiesThatCanEnter}");
+
+                //owoSkin.Feel("Belly Rumble", 3);
             }
         }
 
