@@ -10,7 +10,7 @@ namespace OWO_ElvenAssassin
 {
     public class OWOSkin
     {
-        public bool suitDisabled = true;
+        public bool suitEnabled = false;
         public bool systemInitialized = false;
         private static bool heartBeatIsActive = false;
         private static bool waterIsActive = false;
@@ -67,11 +67,11 @@ namespace OWO_ElvenAssassin
 
             if (OWO.ConnectionState == OWOGame.ConnectionState.Connected)
             {
-                suitDisabled = false;
+                suitEnabled = true;
                 LOG("OWO suit connected.");
-                Feel("Heartbeat");
+                Feel("Heart Beat");
             }
-            if (suitDisabled) LOG("OWO is not enabled?!?!");
+            if (!suitEnabled) LOG("OWO is not enabled?!?!");
         }
 
         public BakedSensation[] AllBakedSensations()
@@ -172,7 +172,7 @@ namespace OWO_ElvenAssassin
         {
             while (heartBeatIsActive)
             {
-                Feel("Heartbeat", 0);
+                Feel("Heart Beat", 0);
                 await Task.Delay(1000);
             }
         }

@@ -37,7 +37,14 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix(WenklyStudio.BowController __instance)
             {
-                owoSkin.LOG($"UpdateBowTensionValue: {__instance.BowAnimationNormalizedTime}");
+                if (!owoSkin.suitEnabled) return;
+
+                if(__instance.BowAnimationNormalizedTime >= 0.3)
+                {
+                    owoSkin.StartChoking();
+                }
+
+                //owoSkin.LOG($"UpdateBowTensionValue: {__instance.BowAnimationNormalizedTime}");
             }
         }
         
@@ -49,7 +56,8 @@ namespace OWO_ElvenAssassin
             {
                 //if (!__instance.IsHandAttached) return;
 
-                owoSkin.FeelWithHand("BowRelease", 2, isRightHanded);
+                owoSkin.StopChoking();
+                owoSkin.FeelWithHand("Bow Release", 2, isRightHanded);
             }
         }
         #endregion
@@ -113,22 +121,41 @@ namespace OWO_ElvenAssassin
         {
             [HarmonyPostfix]
             public static void Postfix()
-            {               
-                owoSkin.LOG($"Teleporting bro!");
+            {                
+                if (!owoSkin.suitEnabled) return;
 
-                //owoSkin.Feel("Belly Rumble", 3);
+                owoSkin.Feel("Teleport", 2);
             }
         }
 
+        //RPG Mode
         [HarmonyPatch(typeof(GateController), "DamageGate")]
         public class DamageGate
         {
             [HarmonyPostfix]
             public static void Postfix(GateController __instance)
             {
-                owoSkin.LOG($"Damage Gate {__instance.EnemiesThatCanEnter}");
+                if (!owoSkin.suitEnabled) return;
 
-                //owoSkin.Feel("Belly Rumble", 3);
+
+                if (Traverse.Create(__instance).Field("gateAlreadyDestroyed").GetValue<bool>() == false) {
+                    owoSkin.Feel("Gate Damage", 3);
+
+                    //If remaining life less than 5 start heartbeat
+                    if (__instance.EnemiesThatCanEnter <= __instance.MaxEnemiesThatCanEnter / 4)
+                    {
+                        owoSkin.StartHeartBeat();
+                    }
+
+                    //If dead stop heatbeat
+                    if (__instance.EnemiesThatCanEnter == 0)
+                    {
+                        owoSkin.StopAllHapticFeedback();
+                        owoSkin.Feel("Death", 3);
+                    }
+
+                    //owoSkin.LOG($"Damage Gate {__instance.EnemiesThatCanEnter}");
+                }
             }
         }
 
