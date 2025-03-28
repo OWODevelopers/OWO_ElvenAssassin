@@ -13,6 +13,7 @@ namespace OWO_ElvenAssassin
         public bool suitEnabled = false;
         public bool systemInitialized = false;
         private static bool heartBeatIsActive = false;
+        private int heartbeatCount = 0;
         private static bool waterIsActive = false;
         private static bool chokingIsActive = false;
 
@@ -166,12 +167,14 @@ namespace OWO_ElvenAssassin
         public void StopHeartBeat()
         {
             heartBeatIsActive = false;
+            heartbeatCount = 0;
         }
 
         public async Task HeartBeatFuncAsync()
         {
-            while (heartBeatIsActive)
+            while (heartBeatIsActive && heartbeatCount <= 15)
             {
+                heartbeatCount++;
                 Feel("Heart Beat", 0);
                 await Task.Delay(1000);
             }
