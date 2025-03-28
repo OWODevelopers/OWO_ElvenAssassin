@@ -2,6 +2,8 @@
 using MelonLoader;
 using HarmonyLib;
 using UnityEngine;
+using WenklyStudio.Payload;
+using WenklyStudio.ElvenAssassin;
 
 [assembly: MelonInfo(typeof(OWO_ElvenAssassin.OWO_ElvenAssassin), "OWO_ElvenAssassin", "1.0.0", "OWOGame")]
 [assembly: MelonGame("WenklyStudio", "Elven Assassin")]
@@ -128,7 +130,7 @@ namespace OWO_ElvenAssassin
             }
         }
 
-        //RPG Mode
+        #region RPG MODE
         [HarmonyPatch(typeof(GateController), "DamageGate")]
         public class DamageGate
         {
@@ -173,5 +175,72 @@ namespace OWO_ElvenAssassin
             }
         }
 
+        [HarmonyPatch(typeof(CartController), "CallOnCartDiedEvent")]
+        public class CallOnCartDiedEvent
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                //if (!owoSkin.suitEnabled) return;
+
+                owoSkin.Feel("Death", 2);
+            }
+        }
+        #endregion
+
+        #region Interactable
+
+        [HarmonyPatch(typeof(CannonController), "FireCannon")]
+        public class FireCannon
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                if (!owoSkin.suitEnabled) return;
+
+                owoSkin.Feel("Fire Cannon", 2);
+            }
+        }
+
+        [HarmonyPatch(typeof(CatapultController), "ThrowRock")]
+        public class ThrowRock
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                if (!owoSkin.suitEnabled) return;
+
+                owoSkin.Feel("Fire Catapult", 2);
+            }
+        }
+
+        [HarmonyPatch(typeof(BalistaShootController), "Shoot")]
+        public class Shoot
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                if (!owoSkin.suitEnabled) return;
+
+                owoSkin.Feel("Fire Balista", 2);
+            }
+        }
+
+        [HarmonyPatch(typeof(HandPickUpController), "UseItem")]
+        public class UseItem
+        {
+            [HarmonyPostfix]
+            public static void Postfix(HandPickUpController __instance)
+            {
+                if (!owoSkin.suitEnabled) return;
+
+                owoSkin.LOG($"UseITem hover:{Traverse.Create(__instance).Field("pickableInteracterHovered").GetValue<PickableInteracter>().name}");
+                owoSkin.LOG($"UseITem grabbed:{Traverse.Create(__instance).Field("pickableInteracterGrabbed").GetValue<PickableInteracter>().name}");
+
+                //owoSkin.Feel("Use Item", 2);
+            }
+        }
+
+        #endregion
     }
 }

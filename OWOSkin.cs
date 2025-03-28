@@ -166,8 +166,8 @@ namespace OWO_ElvenAssassin
 
         public void StopHeartBeat()
         {
-            heartBeatIsActive = false;
             heartbeatCount = 0;
+            heartBeatIsActive = false;
         }
 
         public async Task HeartBeatFuncAsync()
@@ -178,6 +178,8 @@ namespace OWO_ElvenAssassin
                 Feel("Heart Beat", 0);
                 await Task.Delay(1000);
             }
+            
+            StopHeartBeat();
         }
         #endregion
 
