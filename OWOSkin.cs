@@ -1,66 +1,154 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MelonLoader;
+using OWOGame;
 
-namespace MyBhapticsTactsuit
+namespace OWO_ElvenAssassin
 {
-    public class TactsuitVR
+    public class OWOSkin
     {
         public bool suitDisabled = true;
         public bool systemInitialized = false;
-        private static ManualResetEvent HeartBeat_mrse = new ManualResetEvent(false);
-        private static ManualResetEvent Water_mrse = new ManualResetEvent(false);
-        private static ManualResetEvent Choking_mrse = new ManualResetEvent(false);
-        public Dictionary<String, FileInfo> FeedbackMap = new Dictionary<String, FileInfo>();
+        private static bool heartBeatIsActive = false;
+        private static bool waterIsActive = false;
+        private static bool chokingIsActive = false;
 
-        private static bHapticsLib.RotationOption defaultRotationOption = new bHapticsLib.RotationOption(0.0f, 0.0f);
+        public Dictionary<String, Sensation> FeedbackMap = new Dictionary<String, Sensation>();
 
-        public void HeartBeatFunc()
+        public OWOSkin()
         {
-            while (true)
-            {
-                HeartBeat_mrse.WaitOne();
-                bHapticsLib.bHapticsManager.PlayRegistered("HeartBeat");
-                Thread.Sleep(1000);
-            }
+            RegisterAllSensationsFiles();
+            InitializeOWO();
         }
 
-        public void WaterFunc()
+        #region Skin Configuration
+
+        private void RegisterAllSensationsFiles()
         {
-            while (true)
+            string configPath = Directory.GetCurrentDirectory() + "\\Mods\\OWO";
+            DirectoryInfo d = new DirectoryInfo(configPath);
+            FileInfo[] Files = d.GetFiles("*.owo", SearchOption.AllDirectories);
+            for (int i = 0; i < Files.Length; i++)
             {
-                Water_mrse.WaitOne();
-                bHapticsLib.bHapticsManager.PlayRegistered("WaterSlushing");
-                Thread.Sleep(5050);
+                string filename = Files[i].Name;
+                string fullName = Files[i].FullName;
+                string prefix = Path.GetFileNameWithoutExtension(filename);
+                if (filename == "." || filename == "..")
+                    continue;
+                string tactFileStr = File.ReadAllText(fullName);
+                try
+                {
+                    Sensation test = Sensation.Parse(tactFileStr);
+                    FeedbackMap.Add(prefix, test);
+                }
+                catch (Exception e) { LOG(e.Message); }
+
             }
+
+            systemInitialized = true;
         }
 
-        public void ChokingFunc()
+        private async void InitializeOWO()
         {
-            while (true)
+            LOG("Initializing OWO skin");
+
+            var gameAuth = GameAuth.Create(AllBakedSensations()).WithId("38940112");
+
+            OWO.Configure(gameAuth);
+            string[] myIPs = GetIPsFromFile("OWO_Manual_IP.txt");
+            if (myIPs.Length == 0) await OWO.AutoConnect();
+            else
             {
-                Choking_mrse.WaitOne();
-                bHapticsLib.bHapticsManager.PlayRegistered("Choking");
-                Thread.Sleep(1050);
+                await OWO.Connect(myIPs);
             }
+
+            if (OWO.ConnectionState == OWOGame.ConnectionState.Connected)
+            {
+                suitDisabled = false;
+                LOG("OWO suit connected.");
+                Feel("Heartbeat");
+            }
+            if (suitDisabled) LOG("OWO is not enabled?!?!");
         }
 
-        public TactsuitVR()
+        public BakedSensation[] AllBakedSensations()
         {
-            LOG("Initializing suit");
-            suitDisabled = false;
-            RegisterAllTactFiles();
-            LOG("Starting HeartBeat and NeckTingle thread...");
-            Thread HeartBeatThread = new Thread(HeartBeatFunc);
-            HeartBeatThread.Start();
-            Thread WaterThread = new Thread(WaterFunc);
-            WaterThread.Start();
-            Thread ChokingThread = new Thread(ChokingFunc);
-            ChokingThread.Start();
+            var result = new List<BakedSensation>();
+
+            foreach (var sensation in FeedbackMap.Values)
+            {
+                if (sensation is BakedSensation baked)
+                {
+                    LOG("Registered baked sensation: " + baked.name);
+                    result.Add(baked);
+                }
+                else
+                {
+                    LOG("Sensation not baked? " + sensation);
+                    continue;
+                }
+            }
+            return result.ToArray();
+        }
+
+        public string[] GetIPsFromFile(string filename)
+        {
+            List<string> ips = new List<string>();
+            string filePath = Directory.GetCurrentDirectory() + "\\BepinEx\\Plugins\\OWO" + filename;
+            if (File.Exists(filePath))
+            {
+                LOG("Manual IP file found: " + filePath);
+                var lines = File.ReadLines(filePath);
+                foreach (var line in lines)
+                {
+                    if (IPAddress.TryParse(line, out _)) ips.Add(line);
+                    else LOG("IP not valid? ---" + line + "---");
+                }
+            }
+            return ips.ToArray();
+        }
+
+        ~OWOSkin()
+        {
+            LOG("Destructor called");
+            DisconnectOWO();
+        }
+
+        public void DisconnectOWO()
+        {
+            LOG("Disconnecting OWO skin.");
+            OWO.Disconnect();
+        }
+        #endregion
+
+        public void Feel(String key, int Priority = 0, float intensity = 1.0f, float duration = 1.0f)
+        {
+            if (FeedbackMap.ContainsKey(key))
+            {
+                OWO.Send(FeedbackMap[key].WithPriority(Priority));
+            }
+
+            else LOG("Feedback not registered: " + key);
+        }
+
+        public void FeelWithHand(String key, int priority = 0, bool isRightHand = true, float intensity = 1.0f)
+        {
+
+            if (isRightHand)
+            {
+                key += " R";
+            }
+            else
+            {
+                key += " L";
+            }
+
+            Feel(key, priority, intensity);
         }
 
         public void LOG(string logStr)
@@ -68,186 +156,167 @@ namespace MyBhapticsTactsuit
             MelonLogger.Msg(logStr);
         }
 
-
-
-        void RegisterAllTactFiles()
-        {
-            string configPath = Directory.GetCurrentDirectory() + "\\Mods\\bHaptics";
-            DirectoryInfo d = new DirectoryInfo(configPath);
-            FileInfo[] Files = d.GetFiles("*.tact", SearchOption.AllDirectories);
-            for (int i = 0; i < Files.Length; i++)
-            {
-                string filename = Files[i].Name;
-                string fullName = Files[i].FullName;
-                string prefix = Path.GetFileNameWithoutExtension(filename);
-                // LOG("Trying to register: " + prefix + " " + fullName);
-                if (filename == "." || filename == "..")
-                    continue;
-                string tactFileStr = File.ReadAllText(fullName);
-                try
-                {
-                    bHapticsLib.bHapticsManager.RegisterPatternFromJson(prefix, tactFileStr);
-                    LOG("Pattern registered: " + prefix);
-                }
-                catch (Exception e) { LOG(e.ToString()); }
-
-                FeedbackMap.Add(prefix, Files[i]);
-            }
-            systemInitialized = true;
-            //PlaybackHaptics("HeartBeat");
-        }
-
-        public void PlaybackHaptics(String key, float intensity = 1.0f, float duration = 1.0f)
-        {
-            if (FeedbackMap.ContainsKey(key))
-            {
-                bHapticsLib.ScaleOption scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
-                bHapticsLib.bHapticsManager.PlayRegistered(key, key, scaleOption, defaultRotationOption);
-                // LOG("Playing back: " + key);
-            }
-            else
-            {
-                LOG("Feedback not registered: " + key);
-            }
-        }
-
-        public void PlayBackHit(String key, float xzAngle, float yShift)
-        {
-            bHapticsLib.ScaleOption scaleOption = new bHapticsLib.ScaleOption(1f, 1f);
-            bHapticsLib.RotationOption rotationOption = new bHapticsLib.RotationOption(xzAngle, yShift);
-            bHapticsLib.bHapticsManager.PlayRegistered(key, key, scaleOption, rotationOption);
-        }
-
-        public void GunRecoil(bool isRightHand, float intensity = 1.0f )
-        {
-            float duration = 1.0f;
-            var scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
-            var rotationFront = new bHapticsLib.RotationOption(0f, 0f);
-            string postfix = "_L";
-            if (isRightHand) { postfix = "_R"; }
-            string keyArm = "Recoil" + postfix;
-            string keyVest = "RecoilVest" + postfix;
-            bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
-            bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
-        }
-        public void SwordRecoil(bool isRightHand, float intensity = 1.0f)
-        {
-            float duration = 1.0f;
-            var scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
-            var rotationFront = new bHapticsLib.RotationOption(0f, 0f);
-            string postfix = "_L";
-            if (isRightHand) { postfix = "_R"; }
-            string keyArm = "Sword" + postfix;
-            string keyVest = "SwordVest" + postfix;
-            bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
-            bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
-        }
-
-        public bool isMinigunPlaying()
-        {
-            if (IsPlaying("Minigun_L")) { return true; }
-            if (IsPlaying("Minigun_R")) { return true; }
-            if (IsPlaying("MinigunDual_L")) { return true; }
-            if (IsPlaying("MinigunDual_R")) { return true; }
-            return false;
-        }
-
-        public void FireMinigun(bool isRightHand, bool twoHanded)
-        {
-            if (isMinigunPlaying()) { return; }
-
-            string postfix = "";
-            if (twoHanded) { postfix += "Dual"; }
-            if (isRightHand) { postfix += "_R"; }
-            else { postfix += "_L"; }
-            string key = "Minigun" + postfix;
-            string keyVest = "MinigunVest" + postfix;
-            PlaybackHaptics(key);
-            PlaybackHaptics(keyVest);
-        }
-
-        public void StopMinigun(bool isRightHand, bool twoHanded)
-        {
-            string postfix = "";
-            if (twoHanded) { postfix += "Dual"; }
-            if (isRightHand) { postfix += "_R"; }
-            else { postfix += "_L"; }
-            string key = "Minigun" + postfix;
-            string keyVest = "MinigunVest" + postfix;
-            StopHapticFeedback(key);
-            StopHapticFeedback(keyVest);
-        }
-
-        public void HeadShot()
-        {
-            if (bHapticsLib.bHapticsManager.IsDeviceConnected(bHapticsLib.PositionID.Head)) { PlaybackHaptics("HitInTheFace"); }
-            else { PlaybackHaptics("HeadShotVest"); }
-        }
-
-        public void FootStep(bool isRightFoot)
-        {
-            if (!bHapticsLib.bHapticsManager.IsDeviceConnected(bHapticsLib.PositionID.FootLeft)) { return; }
-            string postfix = "_L";
-            if (isRightFoot) { postfix = "_R"; }
-            string key = "FootStep" + postfix;
-            PlaybackHaptics(key);
-        }
-
+        #region heart beat loop
         public void StartHeartBeat()
         {
-            HeartBeat_mrse.Set();
+            if (heartBeatIsActive) return;
+
+            heartBeatIsActive = true;
+            HeartBeatFuncAsync();
         }
 
         public void StopHeartBeat()
         {
-            HeartBeat_mrse.Reset();
+            heartBeatIsActive = false;
         }
 
+        public async Task HeartBeatFuncAsync()
+        {
+            while (heartBeatIsActive)
+            {
+                Feel("Heartbeat", 0);
+                await Task.Delay(1000);
+            }
+        }
+        #endregion
+
+        #region water loop
         public void StartWater()
         {
-            Water_mrse.Set();
+            if (waterIsActive) return;
+
+            waterIsActive = true;
+            WaterFuncAsync();
         }
 
         public void StopWater()
         {
-            Water_mrse.Reset();
+            waterIsActive = false;
         }
 
+        public async Task WaterFuncAsync()
+        {
+            while (waterIsActive)
+            {
+                Feel("Water Slushing", 0);
+                await Task.Delay(5050);
+            }
+        }
+        #endregion
+
+        #region choking loop
         public void StartChoking()
         {
-            Choking_mrse.Set();
+            if (chokingIsActive) return;
+
+            chokingIsActive = true;
+            ChokingFuncAsync();
         }
 
         public void StopChoking()
         {
-            Choking_mrse.Reset();
-            bHapticsLib.bHapticsManager.StopPlaying("TeleportOpened");
+            chokingIsActive = false;
         }
 
-        public bool IsPlaying(String effect)
+        public async Task ChokingFuncAsync()
         {
-            return bHapticsLib.bHapticsManager.IsPlaying(effect);
-        }
-
-        public void StopHapticFeedback(String effect)
-        {
-            bHapticsLib.bHapticsManager.StopPlaying(effect);
-        }
-
-        public void StopAllHapticFeedback()
-        {
-            StopThreads();
-            foreach (String key in FeedbackMap.Keys)
+            while (chokingIsActive)
             {
-                bHapticsLib.bHapticsManager.StopPlaying(key);
+                Feel("Choking", 0);
+                await Task.Delay(1050);
             }
         }
+        #endregion        
 
-        public void StopThreads()
+        //public void PlayBackHit(String key, float xzAngle, float yShift)
+        //{
+        //    bHapticsLib.ScaleOption scaleOption = new bHapticsLib.ScaleOption(1f, 1f);
+        //    bHapticsLib.RotationOption rotationOption = new bHapticsLib.RotationOption(xzAngle, yShift);
+        //    bHapticsLib.bHapticsManager.PlayRegistered(key, key, scaleOption, rotationOption);
+        //}
+
+        //public void GunRecoil(bool isRightHand, float intensity = 1.0f )
+        //{
+        //    float duration = 1.0f;
+        //    var scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
+        //    var rotationFront = new bHapticsLib.RotationOption(0f, 0f);
+        //    string postfix = "_L";
+        //    if (isRightHand) { postfix = "_R"; }
+        //    string keyArm = "Recoil" + postfix;
+        //    string keyVest = "RecoilVest" + postfix;
+        //    bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
+        //    bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
+        //}
+        //public void SwordRecoil(bool isRightHand, float intensity = 1.0f)
+        //{
+        //    float duration = 1.0f;
+        //    var scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
+        //    var rotationFront = new bHapticsLib.RotationOption(0f, 0f);
+        //    string postfix = "_L";
+        //    if (isRightHand) { postfix = "_R"; }
+        //    string keyArm = "Sword" + postfix;
+        //    string keyVest = "SwordVest" + postfix;
+        //    bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
+        //    bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
+        //}
+
+        //public bool isMinigunPlaying()
+        //{
+        //    if (IsPlaying("Minigun_L")) { return true; }
+        //    if (IsPlaying("Minigun_R")) { return true; }
+        //    if (IsPlaying("MinigunDual_L")) { return true; }
+        //    if (IsPlaying("MinigunDual_R")) { return true; }
+        //    return false;
+        //}
+
+        //public void FireMinigun(bool isRightHand, bool twoHanded)
+        //{
+        //    if (isMinigunPlaying()) { return; }
+
+        //    string postfix = "";
+        //    if (twoHanded) { postfix += "Dual"; }
+        //    if (isRightHand) { postfix += "_R"; }
+        //    else { postfix += "_L"; }
+        //    string key = "Minigun" + postfix;
+        //    string keyVest = "MinigunVest" + postfix;
+        //    PlaybackHaptics(key);
+        //    PlaybackHaptics(keyVest);
+        //}
+
+        //public void StopMinigun(bool isRightHand, bool twoHanded)
+        //{
+        //    string postfix = "";
+        //    if (twoHanded) { postfix += "Dual"; }
+        //    if (isRightHand) { postfix += "_R"; }
+        //    else { postfix += "_L"; }
+        //    string key = "Minigun" + postfix;
+        //    string keyVest = "MinigunVest" + postfix;
+        //    StopHapticFeedback(key);
+        //    StopHapticFeedback(keyVest);
+        //}
+
+        //public void HeadShot()
+        //{
+        //    if (bHapticsLib.bHapticsManager.IsDeviceConnected(bHapticsLib.PositionID.Head)) { PlaybackHaptics("HitInTheFace"); }
+        //    else { PlaybackHaptics("HeadShotVest"); }
+        //}
+
+        //public void FootStep(bool isRightFoot)
+        //{
+        //    if (!bHapticsLib.bHapticsManager.IsDeviceConnected(bHapticsLib.PositionID.FootLeft)) { return; }
+        //    string postfix = "_L";
+        //    if (isRightFoot) { postfix = "_R"; }
+        //    string key = "FootStep" + postfix;
+        //    PlaybackHaptics(key);
+        //}       
+
+        public void StopAllHapticFeedback()
         {
             StopHeartBeat();
             StopWater();
             StopChoking();
+
+            OWO.Stop();
         }
 
 
