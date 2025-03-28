@@ -1,6 +1,4 @@
 ﻿using System;
-using UnityEngine;
-
 using MelonLoader;
 using HarmonyLib;
 
@@ -18,7 +16,6 @@ namespace OWO_ElvenAssassin
         public override void OnInitializeMelon()
         {
             owoSkin = new OWOSkin();
-            //tactsuitVr.PlaybackHaptics("HeartBeat");
         }
 
         #region Shoot bow
