@@ -48,6 +48,9 @@
       <HintPath>D:\Games\Steam\steamapps\common\Elven Assassin\MelonLoader\net35\MelonLoader.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="OWO, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\OWO.2.4.2\lib\net48\OWO.dll</HintPath>
+    </Reference>
     <Reference Include="PhotonUnityNetworking">
       <HintPath>D:\Games\Steam\steamapps\common\Elven Assassin\Elven Assassin_Data\Managed\PhotonUnityNetworking.dll</HintPath>
       <Private>False</Private>
@@ -79,6 +82,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
