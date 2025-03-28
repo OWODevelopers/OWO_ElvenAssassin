@@ -132,13 +132,26 @@ namespace OWO_ElvenAssassin
         [HarmonyPatch(typeof(GateController), "DamageGate")]
         public class DamageGate
         {
+            static bool gateDestroyed = false;
+
+            [HarmonyPrefix]
+            public static void Prefix(GateController __instance)
+            {
+                gateDestroyed = Traverse.Create(__instance).Field("gateAlreadyDestroyed").GetValue<bool>();
+            }
+
             [HarmonyPostfix]
             public static void Postfix(GateController __instance)
             {
                 if (!owoSkin.suitEnabled) return;
 
 
-                if (Traverse.Create(__instance).Field("gateAlreadyDestroyed").GetValue<bool>() == false) {
+                if (__instance.EnemiesThatCanEnter == __instance.MaxEnemiesThatCanEnter) {
+                    gateDestroyed = false;
+                }
+
+
+                if (!gateDestroyed) {
                     owoSkin.Feel("Gate Damage", 3);
 
                     //If remaining life less than 5 start heartbeat
@@ -150,6 +163,7 @@ namespace OWO_ElvenAssassin
                     //If dead stop heatbeat
                     if (__instance.EnemiesThatCanEnter == 0)
                     {
+                        gateDestroyed = true;
                         owoSkin.StopAllHapticFeedback();
                         owoSkin.Feel("Death", 3);
                     }
