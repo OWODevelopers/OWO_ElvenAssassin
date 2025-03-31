@@ -58,6 +58,7 @@ namespace OWO_ElvenAssassin
             public static void Postfix(WenklyStudio.BowController __instance)
             {
                 //if (!__instance.IsHandAttached) return;
+                if (!owoSkin.suitEnabled) return;
 
                 PlayerController playerController = Traverse.Create(__instance).Field("playerController").GetValue<PlayerController>();
                 if (playerController.photonView.Owner == PhotonNetwork.LocalPlayer)
@@ -77,6 +78,8 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix(WenklyStudio.ElvenAssassin.PlayerController playerToBeKilled)
             {
+                if (!owoSkin.suitEnabled) return;
+
                 if (playerToBeKilled != PlayersManager.Instance.LocalPlayer) return;
                 owoSkin.Feel("Flame Thrower", 3);
             }
@@ -88,6 +91,8 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix(PlayerControllerCore victim)
             {
+                if (!owoSkin.suitEnabled) return;
+
                 if (victim != PlayersManager.Instance.LocalPlayer) return;
                 owoSkin.Feel("Impact", 3);
             }
@@ -99,6 +104,8 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix()
             {
+                if (!owoSkin.suitEnabled) return;
+
                 owoSkin.Feel("Impact", 3);
             }
         }
@@ -109,6 +116,8 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix()
             {
+                if (!owoSkin.suitEnabled) return;
+
                 owoSkin.Feel("Impact", 3);
             }
         }
@@ -120,6 +129,8 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix()
             {
+                if (!owoSkin.suitEnabled) return;
+
                 owoSkin.Feel("Belly Rumble", 3);
             }
         }
