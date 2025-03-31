@@ -119,6 +119,7 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
+                owoSkin.LOG("AxeHitPlayer");
                 owoSkin.Feel("Impact", 3);
             }
         }
