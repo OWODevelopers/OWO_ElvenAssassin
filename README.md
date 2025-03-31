@@ -9,7 +9,7 @@ The OWO Skin is a haptic technology that allows you to feel everything that happ
 Want to get an OWO Suit? [Look here](https://owogame.com/shop/).
 
 # Installation [MelonLoader 0.7.0]
-- Download [MelonLoader](https://github.com/LavaGang/MelonLoader/Latest).
+- Download [MelonLoader](https://github.com/LavaGang/MelonLoader/releases/Latest).
 - Download the [lastest release of this mod](https://github.com/OWODevelopers/OWO_ElvenAssassin/releases/latest)
 - Extract the mod zip and place all files and the owo folder into the Mods directory of your game installation.
 - Enjoy your inmersive experience! 😊
