@@ -184,12 +184,12 @@ namespace OWO_ElvenAssassin
 
 
         #region StringBow loop
-        public void StartStringBow()
+        public void StartStringBow(bool isRightHanded)
         {
             if (stringBowIsActive) return;
 
             stringBowIsActive = true;
-            StringBowFuncAsync();
+            StringBowFuncAsync(isRightHanded);
         }
 
         public void StopStringBow()
@@ -197,11 +197,11 @@ namespace OWO_ElvenAssassin
             stringBowIsActive = false;
         }
 
-        public async Task StringBowFuncAsync()
+        public async Task StringBowFuncAsync(bool isRightHanded)
         {
             while (stringBowIsActive)
             {
-                Feel("String Bow", 0);
+                FeelWithHand("String Bow", 0, isRightHanded);
                 await Task.Delay(1050);
             }
         }

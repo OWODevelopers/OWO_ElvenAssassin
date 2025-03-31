@@ -45,7 +45,7 @@ namespace OWO_ElvenAssassin
 
                 if (__instance.BowAnimationNormalizedTime >= 0.3 && playerController.photonView.Owner == PhotonNetwork.LocalPlayer)
                 {
-                    owoSkin.StartStringBow();
+                    owoSkin.StartStringBow(isRightHanded);
                 }
 
             }
