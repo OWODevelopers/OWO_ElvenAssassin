@@ -14,7 +14,6 @@ namespace OWO_ElvenAssassin
     {
         public static OWOSkin owoSkin;
         public static bool isRightHanded = true;
-        //public static bool catapultAvailable = true;
         public static string itemInHand = "";
 
         public override void OnInitializeMelon()
@@ -49,7 +48,6 @@ namespace OWO_ElvenAssassin
                     owoSkin.StartStringBow();
                 }
 
-                //owoSkin.LOG($"UpdateBowTensionValue: {__instance.BowAnimationNormalizedTime}");
             }
         }
 
@@ -67,8 +65,6 @@ namespace OWO_ElvenAssassin
                     owoSkin.StopStringBow();
                     owoSkin.FeelWithHand("Bow Release", 2, isRightHanded);
                     itemInHand = "";
-                    owoSkin.LOG($"Item In Hand Release - {itemInHand}");
-
                 }
             }
         }
@@ -181,8 +177,6 @@ namespace OWO_ElvenAssassin
                         owoSkin.StopAllHapticFeedback();
                         owoSkin.Feel("Death", 3);
                     }
-
-                    //owoSkin.LOG($"Damage Gate {__instance.EnemiesThatCanEnter}");
                 }
             }
         }
@@ -193,7 +187,7 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix()
             {
-                //if (!owoSkin.suitEnabled) return;
+                if (!owoSkin.suitEnabled) return;
 
                 owoSkin.Feel("Death", 2);
             }
@@ -251,17 +245,7 @@ namespace OWO_ElvenAssassin
                 if (!owoSkin.suitEnabled) return;
 
                 string holded = Traverse.Create(__instance).Field("pickableInteracterGrabbed").GetValue<PickableInteracter>().name;
-
-                //if (holded == "HornHandle") catapultAvailable = false;
-                //if (holded == "HandleOutline") catapultAvailable = true;
-
-                owoSkin.LOG($"PickUpItem grabbed:{holded}");
                 itemInHand = holded;
-
-                //Antorcha - Torch Handle
-                //Balista - balista_bone_VerticalTurn
-
-                //owoSkin.Feel("Use Item", 2);
             }
         }
         #endregion

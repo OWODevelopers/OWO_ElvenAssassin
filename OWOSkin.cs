@@ -14,7 +14,6 @@ namespace OWO_ElvenAssassin
         public bool systemInitialized = false;
         private static bool heartBeatIsActive = false;
         private int heartbeatCount = 0;
-        private static bool waterIsActive = false;
         private static bool stringBowIsActive = false;
 
         public Dictionary<String, Sensation> FeedbackMap = new Dictionary<String, Sensation>();
@@ -183,29 +182,6 @@ namespace OWO_ElvenAssassin
         }
         #endregion
 
-        #region water loop
-        public void StartWater()
-        {
-            if (waterIsActive) return;
-
-            waterIsActive = true;
-            WaterFuncAsync();
-        }
-
-        public void StopWater()
-        {
-            waterIsActive = false;
-        }
-
-        public async Task WaterFuncAsync()
-        {
-            while (waterIsActive)
-            {
-                Feel("Water Slushing", 0);
-                await Task.Delay(5050);
-            }
-        }
-        #endregion
 
         #region StringBow loop
         public void StartStringBow()
@@ -230,93 +206,11 @@ namespace OWO_ElvenAssassin
             }
         }
         #endregion        
-
-        //public void PlayBackHit(String key, float xzAngle, float yShift)
-        //{
-        //    bHapticsLib.ScaleOption scaleOption = new bHapticsLib.ScaleOption(1f, 1f);
-        //    bHapticsLib.RotationOption rotationOption = new bHapticsLib.RotationOption(xzAngle, yShift);
-        //    bHapticsLib.bHapticsManager.PlayRegistered(key, key, scaleOption, rotationOption);
-        //}
-
-        //public void GunRecoil(bool isRightHand, float intensity = 1.0f )
-        //{
-        //    float duration = 1.0f;
-        //    var scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
-        //    var rotationFront = new bHapticsLib.RotationOption(0f, 0f);
-        //    string postfix = "_L";
-        //    if (isRightHand) { postfix = "_R"; }
-        //    string keyArm = "Recoil" + postfix;
-        //    string keyVest = "RecoilVest" + postfix;
-        //    bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
-        //    bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
-        //}
-        //public void SwordRecoil(bool isRightHand, float intensity = 1.0f)
-        //{
-        //    float duration = 1.0f;
-        //    var scaleOption = new bHapticsLib.ScaleOption(intensity, duration);
-        //    var rotationFront = new bHapticsLib.RotationOption(0f, 0f);
-        //    string postfix = "_L";
-        //    if (isRightHand) { postfix = "_R"; }
-        //    string keyArm = "Sword" + postfix;
-        //    string keyVest = "SwordVest" + postfix;
-        //    bHapticsLib.bHapticsManager.PlayRegistered(keyArm, keyArm, scaleOption, rotationFront);
-        //    bHapticsLib.bHapticsManager.PlayRegistered(keyVest, keyVest, scaleOption, rotationFront);
-        //}
-
-        //public bool isMinigunPlaying()
-        //{
-        //    if (IsPlaying("Minigun_L")) { return true; }
-        //    if (IsPlaying("Minigun_R")) { return true; }
-        //    if (IsPlaying("MinigunDual_L")) { return true; }
-        //    if (IsPlaying("MinigunDual_R")) { return true; }
-        //    return false;
-        //}
-
-        //public void FireMinigun(bool isRightHand, bool twoHanded)
-        //{
-        //    if (isMinigunPlaying()) { return; }
-
-        //    string postfix = "";
-        //    if (twoHanded) { postfix += "Dual"; }
-        //    if (isRightHand) { postfix += "_R"; }
-        //    else { postfix += "_L"; }
-        //    string key = "Minigun" + postfix;
-        //    string keyVest = "MinigunVest" + postfix;
-        //    PlaybackHaptics(key);
-        //    PlaybackHaptics(keyVest);
-        //}
-
-        //public void StopMinigun(bool isRightHand, bool twoHanded)
-        //{
-        //    string postfix = "";
-        //    if (twoHanded) { postfix += "Dual"; }
-        //    if (isRightHand) { postfix += "_R"; }
-        //    else { postfix += "_L"; }
-        //    string key = "Minigun" + postfix;
-        //    string keyVest = "MinigunVest" + postfix;
-        //    StopHapticFeedback(key);
-        //    StopHapticFeedback(keyVest);
-        //}
-
-        //public void HeadShot()
-        //{
-        //    if (bHapticsLib.bHapticsManager.IsDeviceConnected(bHapticsLib.PositionID.Head)) { PlaybackHaptics("HitInTheFace"); }
-        //    else { PlaybackHaptics("HeadShotVest"); }
-        //}
-
-        //public void FootStep(bool isRightFoot)
-        //{
-        //    if (!bHapticsLib.bHapticsManager.IsDeviceConnected(bHapticsLib.PositionID.FootLeft)) { return; }
-        //    string postfix = "_L";
-        //    if (isRightFoot) { postfix = "_R"; }
-        //    string key = "FootStep" + postfix;
-        //    PlaybackHaptics(key);
-        //}       
+    
 
         public void StopAllHapticFeedback()
         {
             StopHeartBeat();
-            StopWater();
             StopStringBow();
 
             OWO.Stop();
