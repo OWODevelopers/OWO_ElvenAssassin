@@ -205,8 +205,13 @@ namespace OWO_ElvenAssassin
                 await Task.Delay(1050);
             }
         }
-        #endregion        
-    
+        #endregion
+
+        public void DeathAction()
+        {
+            StopAllHapticFeedback();
+            Feel("Death", 3);
+        }
 
         public void StopAllHapticFeedback()
         {

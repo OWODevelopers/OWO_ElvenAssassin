@@ -94,6 +94,7 @@ namespace OWO_ElvenAssassin
                 if (!owoSkin.suitEnabled) return;
 
                 if (victim != PlayersManager.Instance.LocalPlayer) return;
+
                 owoSkin.Feel("Impact", 3);
             }
         }
@@ -185,11 +186,12 @@ namespace OWO_ElvenAssassin
                     if (__instance.EnemiesThatCanEnter == 0)
                     {
                         gateDestroyed = true;
-                        owoSkin.StopAllHapticFeedback();
-                        owoSkin.Feel("Death", 3);
+                        owoSkin.DeathAction();
                     }
                 }
             }
+
+            
         }
 
         [HarmonyPatch(typeof(CartController), "CallOnCartDiedEvent")]
@@ -200,7 +202,7 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
-                owoSkin.Feel("Death", 2);
+                owoSkin.DeathAction();
             }
         }
         #endregion
