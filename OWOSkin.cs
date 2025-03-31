@@ -15,7 +15,7 @@ namespace OWO_ElvenAssassin
         private static bool heartBeatIsActive = false;
         private int heartbeatCount = 0;
         private static bool waterIsActive = false;
-        private static bool chokingIsActive = false;
+        private static bool stringBowIsActive = false;
 
         public Dictionary<String, Sensation> FeedbackMap = new Dictionary<String, Sensation>();
 
@@ -207,25 +207,25 @@ namespace OWO_ElvenAssassin
         }
         #endregion
 
-        #region choking loop
-        public void StartChoking()
+        #region StringBow loop
+        public void StartStringBow()
         {
-            if (chokingIsActive) return;
+            if (stringBowIsActive) return;
 
-            chokingIsActive = true;
-            ChokingFuncAsync();
+            stringBowIsActive = true;
+            StringBowFuncAsync();
         }
 
-        public void StopChoking()
+        public void StopStringBow()
         {
-            chokingIsActive = false;
+            stringBowIsActive = false;
         }
 
-        public async Task ChokingFuncAsync()
+        public async Task StringBowFuncAsync()
         {
-            while (chokingIsActive)
+            while (stringBowIsActive)
             {
-                Feel("Choking", 0);
+                Feel("String Bow", 0);
                 await Task.Delay(1050);
             }
         }
@@ -317,7 +317,7 @@ namespace OWO_ElvenAssassin
         {
             StopHeartBeat();
             StopWater();
-            StopChoking();
+            StopStringBow();
 
             OWO.Stop();
         }

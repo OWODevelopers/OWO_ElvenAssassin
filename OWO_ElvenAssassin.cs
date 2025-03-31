@@ -1,8 +1,7 @@
-﻿using System;
+﻿using HarmonyLib;
 using MelonLoader;
-using HarmonyLib;
-using UnityEngine;
-using WenklyStudio.Payload;
+using Photon.Pun;
+using System;
 using WenklyStudio.ElvenAssassin;
 
 [assembly: MelonInfo(typeof(OWO_ElvenAssassin.OWO_ElvenAssassin), "OWO_ElvenAssassin", "1.0.0", "OWOGame")]
@@ -15,6 +14,8 @@ namespace OWO_ElvenAssassin
     {
         public static OWOSkin owoSkin;
         public static bool isRightHanded = true;
+        //public static bool catapultAvailable = true;
+        public static string itemInHand = "";
 
         public override void OnInitializeMelon()
         {
@@ -41,15 +42,17 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
-                if(__instance.BowAnimationNormalizedTime >= 0.3)
+                PlayerController playerController = Traverse.Create(__instance).Field("playerController").GetValue<PlayerController>();
+
+                if (__instance.BowAnimationNormalizedTime >= 0.3 && playerController.photonView.Owner == PhotonNetwork.LocalPlayer)
                 {
-                    owoSkin.StartChoking();
+                    owoSkin.StartStringBow();
                 }
 
                 //owoSkin.LOG($"UpdateBowTensionValue: {__instance.BowAnimationNormalizedTime}");
             }
         }
-        
+
         [HarmonyPatch(typeof(WenklyStudio.BowController), "Shoot", new Type[] { })]
         public class ShootBow
         {
@@ -58,8 +61,15 @@ namespace OWO_ElvenAssassin
             {
                 //if (!__instance.IsHandAttached) return;
 
-                owoSkin.StopChoking();
-                owoSkin.FeelWithHand("Bow Release", 2, isRightHanded);
+                PlayerController playerController = Traverse.Create(__instance).Field("playerController").GetValue<PlayerController>();
+                if (playerController.photonView.Owner == PhotonNetwork.LocalPlayer)
+                {
+                    owoSkin.StopStringBow();
+                    owoSkin.FeelWithHand("Bow Release", 2, isRightHanded);
+                    itemInHand = "";
+                    owoSkin.LOG($"Item In Hand Release - {itemInHand}");
+
+                }
             }
         }
         #endregion
@@ -87,7 +97,7 @@ namespace OWO_ElvenAssassin
             }
         }
 
-        [HarmonyPatch(typeof(WenklyStudio.ElvenAssassin.TrollAttackController), "AnimationEventKillPlayer", new Type[] {  })]
+        [HarmonyPatch(typeof(WenklyStudio.ElvenAssassin.TrollAttackController), "AnimationEventKillPlayer", new Type[] { })]
         public class TrollKillPlayer
         {
             [HarmonyPostfix]
@@ -113,7 +123,7 @@ namespace OWO_ElvenAssassin
         {
             [HarmonyPostfix]
             public static void Postfix()
-            {                
+            {
                 owoSkin.Feel("Belly Rumble", 3);
             }
         }
@@ -123,7 +133,7 @@ namespace OWO_ElvenAssassin
         {
             [HarmonyPostfix]
             public static void Postfix()
-            {                
+            {
                 if (!owoSkin.suitEnabled) return;
 
                 owoSkin.Feel("Teleport", 2);
@@ -148,12 +158,14 @@ namespace OWO_ElvenAssassin
                 if (!owoSkin.suitEnabled) return;
 
 
-                if (__instance.EnemiesThatCanEnter == __instance.MaxEnemiesThatCanEnter) {
+                if (__instance.EnemiesThatCanEnter == __instance.MaxEnemiesThatCanEnter)
+                {
                     gateDestroyed = false;
                 }
 
 
-                if (!gateDestroyed) {
+                if (!gateDestroyed)
+                {
                     owoSkin.Feel("Gate Damage", 3);
 
                     //If remaining life less than 5 start heartbeat
@@ -198,6 +210,7 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
+                if (itemInHand != "Torch Handle") return;
                 owoSkin.Feel("Fire Cannon", 2);
             }
         }
@@ -210,6 +223,7 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
+                if (itemInHand != "HandleOutline") return;
                 owoSkin.Feel("Fire Catapult", 2);
             }
         }
@@ -222,25 +236,34 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
+                if (itemInHand != "balista_bone_VerticalTurn") return;
                 owoSkin.Feel("Fire Balista", 2);
             }
         }
 
-        [HarmonyPatch(typeof(HandPickUpController), "UseItem")]
-        public class UseItem
+
+        [HarmonyPatch(typeof(HandPickUpController), "PickUpItem")]
+        public class PickUpItem
         {
             [HarmonyPostfix]
             public static void Postfix(HandPickUpController __instance)
             {
                 if (!owoSkin.suitEnabled) return;
 
-                owoSkin.LOG($"UseITem hover:{Traverse.Create(__instance).Field("pickableInteracterHovered").GetValue<PickableInteracter>().name}");
-                owoSkin.LOG($"UseITem grabbed:{Traverse.Create(__instance).Field("pickableInteracterGrabbed").GetValue<PickableInteracter>().name}");
+                string holded = Traverse.Create(__instance).Field("pickableInteracterGrabbed").GetValue<PickableInteracter>().name;
+
+                //if (holded == "HornHandle") catapultAvailable = false;
+                //if (holded == "HandleOutline") catapultAvailable = true;
+
+                owoSkin.LOG($"PickUpItem grabbed:{holded}");
+                itemInHand = holded;
+
+                //Antorcha - Torch Handle
+                //Balista - balista_bone_VerticalTurn
 
                 //owoSkin.Feel("Use Item", 2);
             }
         }
-
         #endregion
     }
 }
