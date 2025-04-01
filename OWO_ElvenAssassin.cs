@@ -41,10 +41,9 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
-                PlayerController playerController = Traverse.Create(__instance).Field("playerController").GetValue<PlayerController>();
-
-                if (__instance.BowAnimationNormalizedTime >= 0.3 && playerController.photonView.Owner == PhotonNetwork.LocalPlayer)
+                if (__instance.BowAnimationNormalizedTime >= 0.3 && __instance.photonView.Owner == PhotonNetwork.LocalPlayer)
                 {
+                    owoSkin.stringBowIntensity = (int)__instance.BowAnimationNormalizedTime * 100;
                     owoSkin.StartStringBow(isRightHanded);
                 }
 
@@ -137,18 +136,6 @@ namespace OWO_ElvenAssassin
             }
         }
 
-        [HarmonyPatch(typeof(TeleportController), "TeleportLocalPlayer")]
-        public class TeleportLocalPlayer
-        {
-            [HarmonyPostfix]
-            public static void Postfix()
-            {
-                if (!owoSkin.suitEnabled) return;
-
-                owoSkin.Feel("Teleport", 2);
-            }
-        }
-
         #region RPG MODE
         [HarmonyPatch(typeof(GateController), "DamageGate")]
         public class DamageGate
@@ -209,6 +196,18 @@ namespace OWO_ElvenAssassin
         #endregion
 
         #region Interactable
+
+        [HarmonyPatch(typeof(TeleportController), "TeleportLocalPlayer")]
+        public class TeleportLocalPlayer
+        {
+            [HarmonyPostfix]
+            public static void Postfix()
+            {
+                if (!owoSkin.suitEnabled) return;
+
+                owoSkin.Feel("Teleport", 2);
+            }
+        }
 
         [HarmonyPatch(typeof(CannonController), "FireCannon")]
         public class FireCannon

@@ -15,6 +15,7 @@ namespace OWO_ElvenAssassin
         private static bool heartBeatIsActive = false;
         private int heartbeatCount = 0;
         private static bool stringBowIsActive = false;
+        public int stringBowIntensity = 40;
 
         public Dictionary<String, Sensation> FeedbackMap = new Dictionary<String, Sensation>();
 
@@ -140,7 +141,7 @@ namespace OWO_ElvenAssassin
             else LOG("Feedback not registered: " + key);
         }
 
-        public void FeelWithHand(String key, int priority = 0, bool isRightHand = true, float intensity = 1.0f)
+        public void FeelWithHand(String key, int priority = 0, bool isRightHand = true, int intensity = 0)
         {
 
             if (isRightHand)
@@ -152,7 +153,7 @@ namespace OWO_ElvenAssassin
                 key += " L";
             }
 
-            Feel(key, priority, intensity);
+            Feel(key, priority);
         }
 
         public void LOG(string logStr)
@@ -207,8 +208,8 @@ namespace OWO_ElvenAssassin
         {
             while (stringBowIsActive)
             {
-                FeelWithHand("String Bow", 1, isRightHanded);
-                await Task.Delay(1050);
+                FeelWithHand("String Bow", 1, isRightHanded, stringBowIntensity);
+                await Task.Delay(1000);
             }
         }
         #endregion
