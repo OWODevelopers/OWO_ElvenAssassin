@@ -2,6 +2,7 @@
 using MelonLoader;
 using Photon.Pun;
 using System;
+using UnityEngine;
 using WenklyStudio.ElvenAssassin;
 
 [assembly: MelonInfo(typeof(OWO_ElvenAssassin.OWO_ElvenAssassin), "OWO_ElvenAssassin", "1.0.0", "OWOGame")]
@@ -39,12 +40,16 @@ namespace OWO_ElvenAssassin
             [HarmonyPostfix]
             public static void Postfix(WenklyStudio.BowController __instance)
             {
-                if (!owoSkin.suitEnabled) return;
+                if (!owoSkin.suitEnabled || __instance.photonView.Owner != PhotonNetwork.LocalPlayer) return;
 
-                if (__instance.BowAnimationNormalizedTime >= 0.3 && __instance.photonView.Owner == PhotonNetwork.LocalPlayer)
+                if (__instance.BowAnimationNormalizedTime >= 0.3 )
                 {
-                    owoSkin.stringBowIntensity = (int)__instance.BowAnimationNormalizedTime * 100;
+                    owoSkin.stringBowIntensity = Mathf.FloorToInt(Mathf.Clamp(__instance.BowAnimationNormalizedTime * 100.0f ,40, 100));
                     owoSkin.StartStringBow(isRightHanded);
+                }
+                else if (owoSkin.stringBowIsActive)
+                {
+                    owoSkin.StopStringBow();
                 }
 
             }

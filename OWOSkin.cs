@@ -14,7 +14,7 @@ namespace OWO_ElvenAssassin
         public bool systemInitialized = false;
         private static bool heartBeatIsActive = false;
         private int heartbeatCount = 0;
-        private static bool stringBowIsActive = false;
+        public bool stringBowIsActive = false;
         public int stringBowIntensity = 40;
 
         public Dictionary<String, Sensation> FeedbackMap = new Dictionary<String, Sensation>();
@@ -129,7 +129,7 @@ namespace OWO_ElvenAssassin
         {
             if (FeedbackMap.ContainsKey(key))
             {
-                Sensation toSend = FeedbackMap[key];
+                Sensation toSend = FeedbackMap[key];                
 
                 if (intensity != 0) {
                     toSend = toSend.WithMuscles(Muscle.All.WithIntensity(intensity));
@@ -153,7 +153,7 @@ namespace OWO_ElvenAssassin
                 key += " L";
             }
 
-            Feel(key, priority);
+            Feel(key, priority, intensity);
         }
 
         public void LOG(string logStr)
@@ -209,7 +209,7 @@ namespace OWO_ElvenAssassin
             while (stringBowIsActive)
             {
                 FeelWithHand("String Bow", 1, isRightHanded, stringBowIntensity);
-                await Task.Delay(1000);
+                await Task.Delay(100);
             }
         }
         #endregion
