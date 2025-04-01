@@ -124,11 +124,17 @@ namespace OWO_ElvenAssassin
         }
         #endregion
 
-        public void Feel(String key, int Priority = 0, float intensity = 1.0f, float duration = 1.0f)
+        public void Feel(String key, int Priority = 0, int intensity = 0, float duration = 1.0f)
         {
             if (FeedbackMap.ContainsKey(key))
             {
-                OWO.Send(FeedbackMap[key].WithPriority(Priority));
+                Sensation toSend = FeedbackMap[key];
+
+                if (intensity != 0) {
+                    toSend = toSend.WithMuscles(Muscle.All.WithIntensity(intensity));
+                }
+
+                OWO.Send(toSend.WithPriority(Priority));
             }
 
             else LOG("Feedback not registered: " + key);
