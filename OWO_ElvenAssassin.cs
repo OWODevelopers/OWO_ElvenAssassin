@@ -133,7 +133,7 @@ namespace OWO_ElvenAssassin
             {
                 if (!owoSkin.suitEnabled) return;
 
-                owoSkin.Feel("Belly Rumble", 3);
+                owoSkin.Feel("Belly Rumble", 1);
             }
         }
 
@@ -175,7 +175,7 @@ namespace OWO_ElvenAssassin
 
                 if (!gateDestroyed)
                 {
-                    owoSkin.Feel("Gate Damage", 3);
+                    owoSkin.Feel("Gate Damage", 2);
 
                     //If remaining life less than 5 start heartbeat
                     if (__instance.EnemiesThatCanEnter <= __instance.MaxEnemiesThatCanEnter / 4)

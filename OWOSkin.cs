@@ -201,7 +201,7 @@ namespace OWO_ElvenAssassin
         {
             while (stringBowIsActive)
             {
-                FeelWithHand("String Bow", 0, isRightHanded);
+                FeelWithHand("String Bow", 1, isRightHanded);
                 await Task.Delay(1050);
             }
         }
@@ -210,7 +210,7 @@ namespace OWO_ElvenAssassin
         public void DeathAction()
         {
             StopAllHapticFeedback();
-            Feel("Death", 3);
+            Feel("Death", 4);
         }
 
         public void StopAllHapticFeedback()
